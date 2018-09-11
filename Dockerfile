@@ -37,32 +37,22 @@ RUN adduser --disabled-password --gecos "DefectDojo" dojo
 WORKDIR /opt
 RUN git clone https://github.com/DefectDojo/django-DefectDojo.git
 
-WORKDIR /opt/django-DefectDojo
 # Install application dependancies
+WORKDIR /opt/django-DefectDojo
+RUN chmod 0770 -R /opt/django-DefectDojo
 RUN /bin/bash -c "source entrypoint_scripts/common/dojo-shared-resources.sh && install_os_dependencies"
 
 # Give the app user sudo permissions and switch executing user
 RUN echo "dojo    ALL=(ALL:ALL)   NOPASSWD: ALL" > /etc/sudoers.d/sudo_dojo
 
-# Upload and run script for dynamic creation of a passwd file entry with the container’s user ID
-COPY uid_determination.bash /uid_determination.bash
-RUN chmod u=rwx,g=u+x /uid_determination.bash
+# Add entrypoint
+COPY entrypoint.sh /
+RUN chmod 0660 /entrypoint.sh \
+    && chmod a+x /entrypoint.sh
 
-# Upload DefectDojo setup script
-COPY defect_dojo_prerun_setup.bash ./defect_dojo_prerun_setup.bash
-RUN chmod +x defect_dojo_prerun_setup.bash
+# Set arbitrary user permissions on passwd file
+RUN chmod g=u /etc/passwd
 
 USER dojo:dojo
 
-# Start the DB server and run the app
-ENTRYPOINT \
-    # User name recognition at runtime
-    sudo /uid_determination.bash \
-    # DefectDojo interconnection settings configuration
-    && /opt/django-DefectDojo/defect_dojo_prerun_setup.bash \
-    # Update ALLOWED_HOSTS with actual route
-    && sed -e 's/ALLOWED_HOSTS.*/ALLOWED_HOSTS = [" $APPFQDN "]/g' dojo/settings/settings.py \
-    # Start application's components
-    && (celery -A dojo worker -l info --concurrency 3 >> /opt/django-DefectDojo/worker.log 2>&1 &) \
-    && (celery beat -A dojo -l info  >> /opt/django-DefectDojo/beat.log 2>&1 &) \
-    && (python manage.py runserver 0.0.0.0:8000 >> /opt/django-DefectDojo/dojo.log 2>&1)
+ENTRYPOINT ["/entrypoint.sh"]
