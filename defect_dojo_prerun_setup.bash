@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Initialize variables and functions
-source entrypoint_scripts/common/dojo-shared-resources.sh
+source entrypoint_scripts/common/dojo-shared-resources.sh -y
 
 # This function invocation ensures we're running the script at the right place
 verify_cwd
@@ -13,8 +13,8 @@ verify_cwd
     # SQLUSER
     # SQLPWD
     # DBNAME
-ensure_application_db
 
+ensure_application_db
 # Adjust the settings.py file
 # ENV vars involved:
     # SQLHOST
@@ -22,6 +22,7 @@ ensure_application_db
     # SQLUSER
     # SQLPWD
     # DBNAME
+
 prepare_settings_file
 
 # Ensure, we're running on a supported python version

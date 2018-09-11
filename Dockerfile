@@ -57,7 +57,7 @@ USER dojo:dojo
 # Start the DB server and run the app
 ENTRYPOINT \
     # User name recognition at runtime
-    /uid_determination.bash \
+    sudo /uid_determination.bash \
     # DefectDojo interconnection settings configuration
     && /opt/django-DefectDojo/defect_dojo_prerun_setup.bash \
     # Update ALLOWED_HOSTS with actual route
