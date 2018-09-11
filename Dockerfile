@@ -22,6 +22,7 @@ ENV APPFQDN=$APPFQDN
 # Update and install basic requirements;
 
 RUN apt-get update && apt-get install -y \
+    python \
     mysql-client \
     sudo \
     curl \
