@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     nodejs-legacy \
     npm \
     mysql-client \
+    libmysqlclient-dev \
     sudo \
     curl \
     git \
@@ -37,7 +38,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install virtualenv
-RUN pip install virtualenv django --upgrade
+RUN pip install virtualenv
 
 # Create application user
 RUN adduser --disabled-password --gecos "DefectDojo" dojo
@@ -48,6 +49,10 @@ RUN git clone https://github.com/DefectDojo/django-DefectDojo.git
 
 # Install application dependancies
 WORKDIR /opt/django-DefectDojo
+
+# Install python packages
+RUN pip install -r requirements.txt
+
 RUN chmod 0770 -R /opt/django-DefectDojo
 RUN chown dojo -R /opt/django-DefectDojo
 RUN /bin/bash -c "cd /opt/django-DefectDojo && source entrypoint_scripts/common/dojo-shared-resources.sh -y && install_os_dependencies"
