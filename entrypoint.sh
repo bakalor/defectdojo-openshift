@@ -39,7 +39,7 @@ verify_python_version
 install_app
 
 # Update ALLOWED_HOSTS with actual route
-sed -e 's/ALLOWED_HOSTS.*/ALLOWED_HOSTS = ['\'$APPFQDN\'']/g' /opt/django-DefectDojo/dojo/settings/settings.py
+sed -e 's/ALLOWED_HOSTS.*/ALLOWED_HOSTS = ['\'$APPFQDN\'']/g' -i /opt/django-DefectDojo/dojo/settings/settings.py
 echo "Settings have been updated"
 
 # Start application's components
