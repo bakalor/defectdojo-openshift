@@ -38,10 +38,6 @@ verify_python_version
 # Install the actual application
 install_app
 
-# Create superuser
-# requires DOJO_ADMIN_PASSWORD
-createadmin
-
 # Update ALLOWED_HOSTS with actual route
 sed -e 's/ALLOWED_HOSTS.*/ALLOWED_HOSTS = ["'$APPFQDN'"]/g' dojo/settings/settings.py
 
