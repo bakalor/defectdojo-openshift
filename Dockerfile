@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install virtualenv
-RUN pip install virtualenv
+RUN pip install virtualenv django --upgrade
 
 # Create application user
 RUN adduser --disabled-password --gecos "DefectDojo" dojo
