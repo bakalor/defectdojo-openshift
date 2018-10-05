@@ -45,7 +45,7 @@ RUN adduser --disabled-password --gecos "DefectDojo" dojo
 
 # Upload The DefectDojo application
 WORKDIR /opt
-RUN git clone https://github.com/DefectDojo/django-DefectDojo.git
+RUN git clone -b dev https://github.com/DefectDojo/django-DefectDojo.git
 
 # Install application dependancies
 WORKDIR /opt/django-DefectDojo
