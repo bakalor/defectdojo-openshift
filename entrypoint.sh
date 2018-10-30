@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Initialize variables and functions
-source entrypoint_scripts/common/dojo-shared-resources.sh -y
+source /opt/django-DefectDojo/entrypoint_scripts/common/dojo-shared-resources.sh
 
 # This function invocation ensures we're running the script at the right place
 verify_cwd
@@ -38,4 +38,4 @@ echo "Settings have been updated"
 # Start application's components
 (celery -A dojo worker -l info --concurrency 3 >> /opt/django-DefectDojo/worker.log 2>&1 &)
 (celery beat -A dojo -l info  >> /opt/django-DefectDojo/beat.log 2>&1 &)
-(python manage.py runserver 0.0.0.0:8000 >> /opt/django-DefectDojo/dojo.log 2>&1)
+(python /opt/django-DefectDojo/manage.py runserver 0.0.0.0:8000 >> /opt/django-DefectDojo/dojo.log 2>&1)
