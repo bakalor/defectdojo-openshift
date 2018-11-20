@@ -26,6 +26,8 @@ ENV BATCH_MODE="yes"
 
 # Update and install basic requirements;
 RUN apt-get update && apt-get install -y \
+    postgresql \
+    postgresql-contrib \
     python \
     python-pip \
     apt-transport-https \
