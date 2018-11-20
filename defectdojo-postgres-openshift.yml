@@ -1,0 +1,268 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: "DefectDojo"
+  annotation:
+    openshift.io/display-name: "DefectDojo"
+    description: "DefectDojo is a security tool that automates application security vulnerability management."
+    openshift.io/documentation-url: "https://defectdojo.readthedocs.io/en/latest/"
+    iconClass: "icon-django"
+  labels:
+    template: "defect-dojo-template"
+  message: "The DefectDojo service hostname: ${DOJO_FQDN}"
+
+parameters:
+- name: NAMESPACE
+  displayName: "Project namespace"
+  description: "OC namespace to deploy into"
+  required: true
+  value: ""
+
+- name: DOJO_FQDN
+  displayName: "DefectDojo FQDN"
+  description: "Externally accessible DefectDojo's hostname"
+  required: true
+  value: ""
+
+- name: POSTGRES_HOST
+  displayName: "Hostname of external postgres DB"
+  description: "Hostname of external postgres DB"
+  required: true
+  value: ""
+
+- name: POSTGRES_PORT
+  displayName: "Port of external postgres db"
+  description: "External Postgres port"
+  required: true
+  value: "5432"
+
+- name: POSTGRES_DB
+  displayName: "Name for the default database"
+  description: "Name for the default database"
+  required: true
+  value: "dojo"
+
+- name: POSTGRES_USER
+  displayName: "Postgres superuser name"
+  description: "Postgres user with superuser power"
+  required: true
+  value: ""
+
+- name: POSTGRES_PASSWORD
+  displayName: "Postgres superuser password"
+  description: "Postgres superuser password"
+  required: true
+  value: ""
+
+- name: DOJO_ADMIN_PASSWORD
+  displayName: Defect Dojo Superuser password
+  description: Defect Dojo Superuser password
+  required: true
+  value: ""
+
+- name: DEFECTDOJO_ADMIN_USER
+  displayName: Defect Dojo Superuser
+  description: Defect Dojo Superuser
+  required: true
+  value: ""
+
+objects:
+
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: defect-dojo-secrets
+  stringData:
+    DOJO_ADMIN_PASSWORD: ${DOJO_ADMIN_PASSWORD}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: defect-dojo
+    namespace: ${NAMESPACE}
+    labels:
+      app: defect-dojo
+    annotations:
+        description: Exposes and load balances the application pods
+  spec:
+    selector:
+      app: defect-dojo
+    ports:
+    - name: defect-dojo
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: defect-dojo
+    namespace: ${NAMESPACE}
+    annotations:
+      description: Route for DefectDojo service
+    labels:
+      app: defect-dojo
+  spec:
+    host: ${DOJO_FQDN}
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
+    port:
+      targetPort: defect-dojo
+    to:
+      kind: Service
+      name: defect-dojo
+    wildcardPolicy: None
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: dojo-env-settings
+  data:
+    .env.prod: |
+      # Django Debug, don't enable on production!
+      DD_DEBUG=off
+
+      # Enables Django Admin
+      DD_DJANGO_ADMIN_ENABLED=on
+
+      # A secret key for a particular Django installation.
+      DD_SECRET_KEY=""
+
+      # Key for encrypting credentials in the manager
+      DD_CREDENTIAL_AES_256_KEY=""
+
+      # Database URL, options: postgres://, mysql://, sqlite://, to use unsafe characters encode with urllib.parse.encode
+      DD_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+
+      # Hosts/domain names that are valid for this site;
+      DD_ALLOWED_HOSTS=${DOJO_FQDN}
+
+      # WhiteNoise allows your web app to serve its own static files,
+      # making it a self-contained unit that can be deployed anywhere without relying on nginx,
+      # if using nginx then disable Whitenoise
+      DD_WHITENOISE=on
+
+      # -------------------------------------------------------
+      # Additional Settings / Override defaults in settings.py
+      # -------------------------------------------------------
+
+      # Timezone
+      # DD_TIME_ZONE=America/New_York
+
+      # Track migrations through source control rather than making migrations locally
+      # DD_TRACK_MIGRATIONS=on
+
+      # Whether to use HTTPOnly flag on the session cookie.
+      DD_SESSION_COOKIE_HTTPONLY=on
+
+      # Whether to use HttpOnly flag on the CSRF cookie.
+      DD_CSRF_COOKIE_HTTPONLY=on
+
+      # If True, the SecurityMiddleware redirects all non-HTTPS requests to HTTPS
+      # DD_SECURE_SSL_REDIRECT=off
+
+      # Whether to use a secure cookie for the CSRF cookie.
+      DD_CSRF_COOKIE_SECURE=off
+
+      # If on, the SecurityMiddleware sets the X-XSS-Protection: 1;
+      DD_SECURE_BROWSER_XSS_FILTER=on
+
+      # Change the default language set
+      # DD_LANG=en-us
+
+      # Path to PDF library
+      # DD_WKHTMLTOPDF=/usr/local/bin/wkhtmltopdf
+
+      # Security team name, used for outgoing emails
+      DD_TEAM_NAME=Security
+
+      # Admins for log emails
+      DD_ADMINS=admin:admin@localhost
+
+      # Port scan contact email
+      # DD_PORT_SCAN_CONTACT_EMAIL=email@localhost
+
+      # Port scan from email
+      # DD_PORT_SCAN_RESULT_EMAIL_FROM=email@localhost
+
+      # Port scan email list
+      # DD_PORT_SCAN_EXTERNAL_UNIT_EMAIL_LIST=['email@localhost']
+
+      # Port scan source
+      # DD_PORT_SCAN_SOURCE_IP=127.0.0.1
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    labels:
+      app: defect-dojo
+    name: defect-dojo
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: defect-dojo
+    strategy:
+      type: Recreate
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 6000
+      resources: {}
+    template:
+      metadata:
+        labels:
+          app: defect-dojo
+          deploymentconfig: defect-dojo
+      spec:
+        containers:
+        - image: dplmnt/defectdojo-openshift:latest
+          imagePullPolicy: Always
+          name: defect-dojo
+          ports:
+          - containerPort: 8000
+            protocol: TCP
+          env:
+          - name: DOJO_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: defect-dojo-secrets
+                key: DOJO_ADMIN_PASSWORD
+          - name: DEFECTDOJO_ADMIN_USER
+            value: ${DEFECTDOJO_ADMIN_USER}
+          - name: DBTYPE
+            value: "2"
+          - name: BATCH_MODE
+            value: "yes"
+          - name: SQLHOST
+            value: ${POSTGRES_HOST}
+          - name: SQLPORT
+            value: ${POSTGRES_PORT}
+          - name: DBNAME
+            value: ${POSTGRES_DB}
+          - name: SQLUSER
+            value: ${POSTGRES_USER}
+          - name: SQLPWD
+            valueFrom:
+              secretKeyRef:
+                name: defect-dojo-secrets
+                key: POSTGRES_PASSWORD
+          volumeMounts:
+          - mountPath: /opt/django-DefectDojo/dojo/settings/.env.prod
+            name: dojo-env-settings
+            subPath: .env.prod
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: dojo-env-settings
+          name: dojo-env-settings 
+    test: false
+    triggers:
+    - type: ConfigChange
+
+
+
