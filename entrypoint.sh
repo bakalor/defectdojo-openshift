@@ -14,7 +14,7 @@ verify_cwd
     # SQLPWD
     # DBNAME
 
-ensure_application_db
+export AUTO_DOCKER=yes && ensure_application_db
 # Adjust the settings.py file
 # ENV vars involved:
     # SQLHOST
