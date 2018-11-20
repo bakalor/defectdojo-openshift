@@ -54,7 +54,7 @@ parameters:
   required: true
   value: ""
 
-- name: DOJO_ADMIN_PASSWORD
+- name: DEFECTDOJO_ADMIN_PASSWORD
   displayName: Defect Dojo Superuser password
   description: Defect Dojo Superuser password
   required: true
@@ -224,11 +224,11 @@ objects:
           - containerPort: 8000
             protocol: TCP
           env:
-          - name: DOJO_ADMIN_PASSWORD
+          - name: DEFECTDOJO_ADMIN_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: defect-dojo-secrets
-                key: DOJO_ADMIN_PASSWORD
+                key: DEFECTDOJO_ADMIN_PASSWORD
           - name: DEFECTDOJO_ADMIN_USER
             value: ${DEFECTDOJO_ADMIN_USER}
           - name: DBTYPE
