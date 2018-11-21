@@ -79,7 +79,7 @@ objects:
   metadata:
     name: defect-dojo-secrets
   stringData:
-    DOJO_ADMIN_PASSWORD: ${DOJO_ADMIN_PASSWORD}
+    DEFECTDOJO_ADMIN_PASSWORD: ${DEFECTDOJO_ADMIN_PASSWORD}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
 - kind: Service
