@@ -72,6 +72,25 @@ parameters:
   required: true
   value: "No"
 
+- name: EXTERNAL_SECRETS
+  displayName: "Controls django secrets generation source"
+  description: "Controls django secrets generation source. If set to yes 'SECRET' and 'AES_PASSPHRASE' env variables will be expected."
+  required: true
+  value: "Yes"
+
+- name: SECRET
+  description: Set this to a long random string.
+  displayName: Django Secret Key
+  from: "[\\w]{128}"
+  generate: expression
+
+- name: AES_PASSPHRASE
+  description: Set this to a long random string.
+  displayName: Django Secret Key
+  from: "[\\w]{128}"
+  generate: expression
+  
+
 objects:
 
 - kind: Secret
@@ -134,10 +153,10 @@ objects:
       DD_DJANGO_ADMIN_ENABLED=on
 
       # A secret key for a particular Django installation.
-      DD_SECRET_KEY=""
+      DD_SECRET_KEY=${SECRET}
 
       # Key for encrypting credentials in the manager
-      DD_CREDENTIAL_AES_256_KEY=""
+      DD_CREDENTIAL_AES_256_KEY=${AES_PASSPHRASE}
 
       # Database URL, options: postgres://, mysql://, sqlite://, to use unsafe characters encode with urllib.parse.encode
       DD_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
@@ -241,8 +260,8 @@ objects:
             value: ${DEFECTDOJO_ADMIN_USER}
           - name: DBTYPE
             value: "2"
-          - name: BATCH_MODE
-            value: "yes"
+          - name: EXTERNAL_SECRETS
+            value: ${EXTERNAL_SECRETS}
           - name: SQLHOST
             value: ${POSTGRES_HOST}
           - name: SQLPORT

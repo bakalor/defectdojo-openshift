@@ -6,6 +6,9 @@ source /opt/django-DefectDojo/entrypoint_scripts/common/dojo-shared-resources.sh
 # This function invocation ensures we're running the script at the right place
 verify_cwd
 
+# Ensure, we're running on a supported python version
+verify_python_version
+
 # Create the application DB or recreate it
 # ENV vars involved:
     # SQLHOST
@@ -59,12 +62,18 @@ fi
     # SQLPWD
     # DBNAME
 
-prepare_settings_file
+if [ -z "$EXTERNAL_SECRETS" ]; then
+    echo "Using internal settings generation mechanism"
+    prepare_settings_file
+else
+    # Copy settings file
+    echo "Using externally provided settings"
+    cp dojo/settings/settings.dist.py dojo/settings/settings.py
+fi
 
-# Ensure, we're running on a supported python version
-verify_python_version
 
 # Install the actual application
+echo "Installation has started"
 python manage.py makemigrations dojo
 python manage.py makemigrations --merge --noinput
 python manage.py migrate
