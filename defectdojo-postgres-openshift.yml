@@ -55,16 +55,22 @@ parameters:
   value: ""
 
 - name: DEFECTDOJO_ADMIN_PASSWORD
-  displayName: Defect Dojo Superuser password
-  description: Defect Dojo Superuser password
+  displayName: "Defect Dojo Superuser password"
+  description: "Defect Dojo Superuser password"
   required: true
   value: ""
 
 - name: DEFECTDOJO_ADMIN_USER
-  displayName: Defect Dojo Superuser
-  description: Defect Dojo Superuser
+  displayName: D"efect Dojo Superuser"
+  description: "Defect Dojo Superuser"
   required: true
   value: ""
+
+- name: FLUSH_DB
+  displayName: "Controls database flushing during deployment"
+  description: "Set 'No' is you want to use dojo database as it is"
+  required: true
+  value: "No"
 
 objects:
 
@@ -73,7 +79,7 @@ objects:
   metadata:
     name: defect-dojo-secrets
   stringData:
-    DEFECTDOJO_ADMIN_USER: ${DEFECTDOJO_ADMIN_USER}
+    DEFECTDOJO_ADMIN_PASSWORD: ${DEFECTDOJO_ADMIN_PASSWORD}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
 - kind: Service
@@ -224,6 +230,8 @@ objects:
           - containerPort: 8000
             protocol: TCP
           env:
+          - name: FLUSH_DB
+            value: ${FLUSH_DB}
           - name: DEFECTDOJO_ADMIN_PASSWORD
             valueFrom:
               secretKeyRef:
