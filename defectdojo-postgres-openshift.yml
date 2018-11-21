@@ -73,7 +73,7 @@ objects:
   metadata:
     name: defect-dojo-secrets
   stringData:
-    DOJO_ADMIN_PASSWORD: ${DOJO_ADMIN_PASSWORD}
+    DEFECTDOJO_ADMIN_USER: ${DEFECTDOJO_ADMIN_USER}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
 - kind: Service
@@ -259,10 +259,7 @@ objects:
         - configMap:
             defaultMode: 420
             name: dojo-env-settings
-          name: dojo-env-settings 
+          name: dojo-env-settings
     test: false
     triggers:
     - type: ConfigChange
-
-
-
