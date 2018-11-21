@@ -267,10 +267,7 @@ objects:
         - configMap:
             defaultMode: 420
             name: dojo-env-settings
-          name: dojo-env-settings 
+          name: dojo-env-settings
     test: false
     triggers:
     - type: ConfigChange
-
-
-
