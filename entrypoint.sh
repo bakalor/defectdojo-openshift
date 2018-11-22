@@ -4,10 +4,23 @@
 source /opt/django-DefectDojo/entrypoint_scripts/common/dojo-shared-resources.sh
 
 # This function invocation ensures we're running the script at the right place
-verify_cwd
+required_fs_objects="manage.py setup.bash dojo"
+for obj in $required_fs_objects; do
+    if [ ! -e $obj ]; then
+        echo "Couldn't find '$obj' in $DOJO_ROOT_DIR; Please run this script at the application's root directory" >&2
+        exit 1
+    fi
+done
 
 # Ensure, we're running on a supported python version
-verify_python_version
+# Detect Python version
+PYV=`python -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)";`
+if [[ "$PYV"<"2.7" ]]; then
+    echo "ERROR: DefectDojo requires Python 2.7+"
+    exit 1;
+else
+    echo "Leaving Django 1.x.y requirement"
+fi
 
 # Create the application DB or recreate it
 # ENV vars involved:
@@ -97,7 +110,23 @@ python manage.py collectstatic --noinput
 
 # Create superuser
 if [[ ! $FLUSH_DB =~ ^[nN]o$ ]]; then
-    createadmin
+    echo "=============================================================================="
+    echo "Creating Dojo Admin User"
+    echo "=============================================================================="
+    echo
+
+    #setup default admin dojo user
+    if [ -z "$DEFECTDOJO_ADMIN_USER" ]; then
+        DEFECTDOJO_ADMIN_USER='admin'
+    fi
+    if [ -z "$DOJO_ADMIN_EMAIL" ]; then
+        DOJO_ADMIN_EMAIL='admin@localhost.local'
+    fi
+    if [ -z "$DEFECTDOJO_ADMIN_PASSWORD" ]; then
+        DEFECTDOJO_ADMIN_PASSWORD=`LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+ < /dev/urandom | head -c 32 | xargs`
+    fi
+    #creating default admin user
+    echo "from django.contrib.auth.models import User; User.objects.create_superuser('$DEFECTDOJO_ADMIN_USER', '$DOJO_ADMIN_EMAIL', '$DEFECTDOJO_ADMIN_PASSWORD')" | ./manage.py shell
 else
     echo "Superuser remaind the same"
 fi
