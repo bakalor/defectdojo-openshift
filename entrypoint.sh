@@ -131,6 +131,8 @@ else
     echo "Superuser remaind the same"
 fi
 # Start application's components
-(celery -A dojo worker -l info --concurrency 3 >> /opt/django-DefectDojo/worker.log 2>&1 &)
-(celery beat -A dojo -l info  >> /opt/django-DefectDojo/beat.log 2>&1 &)
-(python /opt/django-DefectDojo/manage.py runserver 0.0.0.0:8000 >> /opt/django-DefectDojo/dojo.log 2>&1)
+celery -A dojo worker -l info --concurrency 3 >> /opt/django-DefectDojo/worker.log 2>&1 &
+echo "Celery worker was started"
+celery beat -A dojo -l info  >> /opt/django-DefectDojo/beat.log 2>&1 &
+echo "Celery Beat was started"
+python /opt/django-DefectDojo/manage.py runserver 0.0.0.0:8000 >> /opt/django-DefectDojo/dojo.log 2>&1

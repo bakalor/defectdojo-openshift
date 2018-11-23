@@ -72,6 +72,12 @@ parameters:
   required: true
   value: "No"
 
+- name: C_FORCE_ROOT
+  displayName: "Running a celery worker with superuser privileges"
+  description: "Running a worker with superuser privileges when the worker accepts messages serialized with pickle is a very bad idea! Please think about this before you do!"
+  required: true
+  value: "True"
+
 - name: EXTERNAL_SECRETS
   displayName: "Controls django secrets generation source"
   description: "Controls django secrets generation source. If set to yes 'SECRET' and 'AES_PASSPHRASE' env variables will be expected."
