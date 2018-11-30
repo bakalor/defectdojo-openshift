@@ -109,27 +109,31 @@ cd components && yarn && cd ..
 python manage.py collectstatic --noinput
 
 # Create superuser
-if [[ ! $FLUSH_DB =~ ^[nN]o$ ]]; then
-    echo "=============================================================================="
-    echo "Creating Dojo Admin User"
-    echo "=============================================================================="
-    echo
 
-    #setup default admin dojo user
-    if [ -z "$DEFECTDOJO_ADMIN_USER" ]; then
-        DEFECTDOJO_ADMIN_USER='admin'
-    fi
-    if [ -z "$DOJO_ADMIN_EMAIL" ]; then
-        DOJO_ADMIN_EMAIL='admin@localhost.local'
-    fi
-    if [ -z "$DEFECTDOJO_ADMIN_PASSWORD" ]; then
-        DEFECTDOJO_ADMIN_PASSWORD=`LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+ < /dev/urandom | head -c 32 | xargs`
-    fi
-    #creating default admin user
-    echo "from django.contrib.auth.models import User; User.objects.create_superuser('$DEFECTDOJO_ADMIN_USER', '$DOJO_ADMIN_EMAIL', '$DEFECTDOJO_ADMIN_PASSWORD')" | ./manage.py shell
+echo "=============================================================================="
+echo "Creating Dojo Super User"
+echo "=============================================================================="
+echo
+
+#setup default admin dojo user
+if [ -z "$DEFECTDOJO_ADMIN_USER" ]; then
+    DEFECTDOJO_ADMIN_USER='admin'
+fi
+if [ -z "$DOJO_ADMIN_EMAIL" ]; then
+    DOJO_ADMIN_EMAIL='admin@localhost.local'
+fi
+if [ -z "$DEFECTDOJO_ADMIN_PASSWORD" ]; then
+    DEFECTDOJO_ADMIN_PASSWORD=`LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+ < /dev/urandom | head -c 32 | xargs`
+fi
+#creating default admin user
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('$DEFECTDOJO_ADMIN_USER', '$DOJO_ADMIN_EMAIL', '$DEFECTDOJO_ADMIN_PASSWORD')" | ./manage.py shell
+if [ $? = 0 ]
+then
+    echo "Superuser $DEFECTDOJO_ADMIN_USER has been created"
 else
     echo "Superuser remaind the same"
 fi
+    
 # Start application's components
 celery -A dojo worker -l info --concurrency 3 >> /opt/django-DefectDojo/worker.log 2>&1 &
 echo "Celery worker was started"
